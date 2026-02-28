@@ -177,28 +177,31 @@ function R4:Launch(opts)
     Junkie.service = opts.Service or "-"
     Junkie.identifier = opts.Identifier or "-"
     Junkie.provider = opts.Provider or "-"
-    
+
+    local verified = false
+    local keyValue = nil
+
     local result = (function()
         getgenv().UI_CLOSED = false
-        
+
         local discordServer = self.Links.Discord
         local ScriptIcon = self.Appearance.Icon
         local DiscordIcon = self.Links.DiscordIcon
         local ServerIcon = self.Links.ServerIcon
         local uiTitle = self.Appearance.Title
         local uiSubtitle = self.Appearance.Subtitle
-        
+
         local hasdiscordserver = self.Features.DiscordButton
         local themechanger = self.Features.ThemeChanger
         local fontchanger = self.Features.FontChanger
-        
+
         local players = game:GetService("Players")
         local tween = game:GetService("TweenService")
         local input = game:GetService("UserInputService")
         local http = game:GetService("HttpService")
         local lighting = game:GetService("Lighting")
         local textSize = game:GetService("TextService")
-        
+
         local pics = {
             main = ScriptIcon,
             server = ServerIcon,
@@ -211,12 +214,12 @@ function R4:Launch(opts)
             theme = "rbxassetid://125572663700289",
             font = "rbxassetid://72037878096321"
         }
-        
+
         local themes = self.Themes
         local fonts = self.Fonts
-        
+
         local config = {}
-        
+
         function config:load()
             local base = {
                 theme = self.selectedTheme or "dark",
@@ -228,40 +231,40 @@ function R4:Launch(opts)
             if ok and dat then return dat end
             return base
         end
-        
+
         function config:save(dat)
             if not pcall(function() return type(writefile) == "function" end) then return false end
             local ok = pcall(function() writefile(R4.Storage.ConfigName..".json", http:JSONEncode(dat)) end)
             return ok
         end
-        
+
         local sv = pcall(function() return type(writefile) == "function" end)
         local usr = config:load()
         local col = themes[usr.theme] or themes.dark
         local curFnt = fonts[usr.font] or fonts.gotham
-        
+
         local function kpK(k)
             if not sv then return false end
             local ok = pcall(function() writefile(R4.Storage.FileName..".txt", k) end)
             return ok
         end
-        
+
         local function gtK()
             if not sv then return nil end
             local ok, d = pcall(function() return readfile(R4.Storage.FileName..".txt") end)
             if not ok or not d then return nil end
             return d
         end
-        
+
         local function drK()
             if not sv then return false end
             local ok = pcall(function() delfile(R4.Storage.FileName..".txt") end)
             return ok
         end
-        
+
         local Pop = {}
         Pop.__index = Pop
-        
+
         function Pop.new(p)
             local self = setmetatable({}, Pop)
             self.p = p
@@ -274,7 +277,7 @@ function R4:Launch(opts)
             self.b.Parent = p
             return self
         end
-        
+
         function Pop:show(m, k, t)
             t = t or 2.5
             local y = (#self.l * 45) + 10
@@ -333,10 +336,10 @@ function R4:Launch(opts)
                 end
             end)
         end
-        
+
         local Main = {}
         Main.__index = Main
-        
+
         function Main.new()
             local self = setmetatable({}, Main)
             self.t = uiTitle
@@ -351,7 +354,7 @@ function R4:Launch(opts)
             self.ad = false
             return self
         end
-        
+
         function Main:gtD()
             if not R4.DiscordAPI.Enabled then
                 self.dc = {
@@ -373,7 +376,7 @@ function R4:Launch(opts)
             end
             return self.dc ~= nil
         end
-        
+
         function Main:shwS()
             if self.dg then return end
             self.dg = true
@@ -633,7 +636,7 @@ function R4:Launch(opts)
                 tween:Create(clPc, TweenInfo.new(0.2), {ImageColor3 = col.textSoft, Rotation = 0}):Play()
             end)
         end
-        
+
         function Main:swp()
             col = themes[self.cf.theme] or themes.dark
             curFnt = fonts[self.cf.font] or fonts.gotham
@@ -641,7 +644,7 @@ function R4:Launch(opts)
             task.wait(0.5)
             self:mk()
         end
-        
+
         function Main:mk()
             if self.gui then self.gui:Destroy() end
             self.gui = Instance.new("ScreenGui")
@@ -1054,7 +1057,7 @@ function R4:Launch(opts)
             
             return self.gui
         end
-        
+
         function Main:addActs()
             local p = self.pt
             
@@ -1180,14 +1183,14 @@ function R4:Launch(opts)
                 if p.keyIcon then tween:Create(p.keyIcon, TweenInfo.new(0.2), {ImageColor3 = col.textFaint, Rotation = 0}):Play() end
             end)
         end
-        
+
         function Main:addEvs()
             table.insert(self.ls, self.pt.closeButton.MouseButton1Click:Connect(function() self:cls() end))
             table.insert(self.ls, self.pt.linkButton.MouseButton1Click:Connect(function() self:hnL() end))
             table.insert(self.ls, self.pt.verifyButton.MouseButton1Click:Connect(function() self:hnV() end))
             table.insert(self.ls, self.pt.keyField.FocusLost:Connect(function(e) if e then self:hnV() end end))
         end
-        
+
         function Main:hnL()
             local l = Junkie.get_key_link()
             if not l then if self.pop then self.pop:show("Failed", "bad", 2) end return end
@@ -1196,7 +1199,7 @@ function R4:Launch(opts)
                 if self.pop then self.pop:show("Link copied", "good", 1.5) end
             end
         end
-        
+
         function Main:hnV()
             local k = self.pt.keyField.Text:gsub("%s+", "")
             if k == "" then if self.pop then self.pop:show("Enter a key", "bad", 1.5) end return end
@@ -1222,12 +1225,14 @@ function R4:Launch(opts)
                 if self.pop then self.pop:show("Verified", "good", 1.5) end
                 task.wait(0.8)
                 getgenv().SCRIPT_KEY = k
+                verified = true
+                keyValue = k
                 self:cls()
             else
                 if self.pop then self.pop:show("Invalid", "bad", 1.5) end
             end
         end
-        
+
         function Main:cls(skp)
             if not skp then getgenv().UI_CLOSED = true end
             for _, i in ipairs(self.ls) do pcall(function() i:Disconnect() end) end
@@ -1238,21 +1243,25 @@ function R4:Launch(opts)
             if self.gui then self.gui:Destroy() end
             return getgenv().SCRIPT_KEY
         end
-        
+
         local svd = gtK()
         local chk = svd or getgenv().SCRIPT_KEY
-        
+
         if chk and usr.autoLoad then
             local res = Junkie.check_key(chk)
             if res and res.valid then
                 if res.message == "KEYLESS" then
                     getgenv().SCRIPT_KEY = "KEYLESS"
+                    verified = true
+                    keyValue = "KEYLESS"
                     local pop = Pop.new(game:GetService("CoreGui"))
                     pop:show("Auto-loaded keyless", "good", 2)
                     return getgenv().SCRIPT_KEY
                 elseif res.message == "KEY_VALID" then
                     if not svd and chk then kpK(chk) end
                     getgenv().SCRIPT_KEY = chk
+                    verified = true
+                    keyValue = chk
                     local pop = Pop.new(game:GetService("CoreGui"))
                     pop:show("Auto-loaded saved key", "good", 2)
                     return getgenv().SCRIPT_KEY
@@ -1260,17 +1269,17 @@ function R4:Launch(opts)
             end
             if svd then drK() end
         end
-        
+
         local app = Main.new()
         app:mk()
-        
+
         while not getgenv().UI_CLOSED do
             task.wait()
         end
-        
+
         return getgenv().SCRIPT_KEY
     end)()
-    
+
     return result
 end
 
