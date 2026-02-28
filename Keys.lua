@@ -1,4 +1,3 @@
--- creds to R4, Sx, Ency
 local R4 = {}
 
 R4.Appearance = {
@@ -179,9 +178,6 @@ function R4:Launch(opts)
     Junkie.identifier = opts.Identifier or "-"
     Junkie.provider = opts.Provider or "-"
 
-    local verified = false
-    local keyValue = nil
-
     local result = (function()
         getgenv().UI_CLOSED = false
 
@@ -361,25 +357,43 @@ function R4:Launch(opts)
             if not R4.DiscordAPI.Enabled then
                 self.dc = {
                     guild = {name = "Join Server"},
-                    approximate_member_count = -1,
-                    approximate_presence_count = -1
+                    member_count = -1,
+                    presence_count = -1
                 }
                 return self.dc ~= nil
             end
             local ok, res = pcall(function() return http:GetAsync(R4.DiscordAPI.URL..discordServer.."?with_counts=true") end)
             if ok then 
                 local data = http:JSONDecode(res)
-                self.dc = {
-                    guild = {name = data.guild.name},
-                    approximate_member_count = data.approximate_member_count,
-                    approximate_presence_count = data.approximate_presence_count
-                }
+                if data.profile and data.profile.member_count then
+                    self.dc = {
+                        guild = {name = data.guild.name},
+                        member_count = data.profile.member_count,
+                        presence_count = data.profile.online_count
+                    }
+                else
+                    self.dc = {
+                        guild = {name = data.guild.name},
+                        member_count = data.approximate_member_count,
+                        presence_count = data.approximate_presence_count
+                    }
+                end
             else
-                self.dc = {
-                    guild = {name = "Join Server"},
-                    approximate_member_count = -1,
-                    approximate_presence_count = -1
-                }
+                local ok2, res2 = pcall(function() return http:GetAsync("https://discord.com/api/v10/invites/"..discordServer.."?with_counts=true") end)
+                if ok2 then
+                    local data = http:JSONDecode(res2)
+                    self.dc = {
+                        guild = {name = data.guild.name},
+                        member_count = data.approximate_member_count,
+                        presence_count = data.approximate_presence_count
+                    }
+                else
+                    self.dc = {
+                        guild = {name = "Join Server"},
+                        member_count = -1,
+                        presence_count = -1
+                    }
+                end
             end
             return self.dc ~= nil
         end
@@ -500,7 +514,7 @@ function R4:Launch(opts)
             mbCt.Size = UDim2.new(0, 60, 0, 16)
             mbCt.Position = UDim2.new(0, 32, 0.25, 0)
             mbCt.BackgroundTransparency = 1
-            mbCt.Text = tostring((self.dc and self.dc.approximate_member_count) or "N/A")
+            mbCt.Text = tostring((self.dc and self.dc.member_count) or "N/A")
             mbCt.TextColor3 = col.text
             mbCt.TextSize = 14
             mbCt.Font = curFnt.bold
@@ -529,7 +543,7 @@ function R4:Launch(opts)
             onCt.Size = UDim2.new(0, 60, 0, 16)
             onCt.Position = UDim2.new(0.5, 30, 0.25, 0)
             onCt.BackgroundTransparency = 1
-            onCt.Text = tostring((self.dc and self.dc.approximate_presence_count) or "N/A")
+            onCt.Text = tostring((self.dc and self.dc.presence_count) or "N/A")
             onCt.TextColor3 = col.text
             onCt.TextSize = 14
             onCt.Font = curFnt.bold
@@ -1252,8 +1266,6 @@ function R4:Launch(opts)
                 if self.pop then self.pop:show("Verified", "good", 1.5) end
                 task.wait(0.8)
                 getgenv().SCRIPT_KEY = k
-                verified = true
-                keyValue = k
                 self:cls()
             else
                 if self.pop then self.pop:show("Invalid", "bad", 1.5) end
@@ -1279,16 +1291,12 @@ function R4:Launch(opts)
             if res and res.valid then
                 if res.message == "KEYLESS" then
                     getgenv().SCRIPT_KEY = "KEYLESS"
-                    verified = true
-                    keyValue = "KEYLESS"
                     local pop = Pop.new(game:GetService("CoreGui"))
                     pop:show("Auto-loaded keyless", "good", 2)
                     return getgenv().SCRIPT_KEY
                 elseif res.message == "KEY_VALID" then
                     if not svd and chk then kpK(chk) end
                     getgenv().SCRIPT_KEY = chk
-                    verified = true
-                    keyValue = chk
                     local pop = Pop.new(game:GetService("CoreGui"))
                     pop:show("Auto-loaded saved key", "good", 2)
                     return getgenv().SCRIPT_KEY
