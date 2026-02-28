@@ -22,12 +22,12 @@ R4.Features = {
     DiscordButton = true,
     ThemeChanger = true,
     FontChanger = true,
-    AutoLoadToggle = true -- bug
+    AutoLoadToggle = true
 }
 
 R4.DiscordAPI = {
     Enabled = true,
-    URL = "https://discord-invites-api.vercel.app/api/v9/invites/"
+    URL = "https://discord-invites-api.vercel.app/api/v10/invites/"
 }
 
 R4.Themes = {
@@ -195,6 +195,7 @@ function R4:Launch(opts)
         local hasdiscordserver = self.Features.DiscordButton
         local themechanger = self.Features.ThemeChanger
         local fontchanger = self.Features.FontChanger
+        local hasautoload = self.Features.AutoLoadToggle
 
         local players = game:GetService("Players")
         local tween = game:GetService("TweenService")
@@ -367,7 +368,12 @@ function R4:Launch(opts)
             end
             local ok, res = pcall(function() return http:GetAsync(R4.DiscordAPI.URL..discordServer.."?with_counts=true") end)
             if ok then 
-                self.dc = http:JSONDecode(res) 
+                local data = http:JSONDecode(res)
+                self.dc = {
+                    guild = {name = data.guild.name},
+                    approximate_member_count = data.approximate_member_count,
+                    approximate_presence_count = data.approximate_presence_count
+                }
             else
                 self.dc = {
                     guild = {name = "Join Server"},
@@ -932,42 +938,59 @@ function R4:Launch(opts)
             kF.ClearTextOnFocus = false
             kF.TextTruncate = Enum.TextTruncate.AtEnd
             kF.Parent = inBx
-            aBx.Size = UDim2.new(1, 0, 0, 30)
-            aBx.Position = UDim2.new(0, 0, 0, 75)
-            aBx.BackgroundTransparency = 1
-            aBx.Parent = mnAr
-            aLb.Size = UDim2.new(0, 100, 1, 0)
-            aLb.Position = UDim2.new(0, 0, 0, 0)
-            aLb.BackgroundTransparency = 1
-            aLb.Text = "Auto Load"
-            aLb.TextColor3 = col.textSoft
-            aLb.TextSize = 12
-            aLb.Font = curFnt.normal
-            aLb.TextXAlignment = Enum.TextXAlignment.Left
-            aLb.Parent = aBx
-            aTg.Size = UDim2.new(0, 44, 0, 22)
-            aTg.Position = UDim2.new(1, 0, 0.5, 0)
-            aTg.AnchorPoint = Vector2.new(1, 0.5)
-            aTg.BackgroundColor3 = self.cf.autoLoad and col.blue or col.light
-            aTg.BackgroundTransparency = self.cf.autoLoad and 0.2 or 0.6
-            aTg.BorderSizePixel = 0
-            aTg.AutoButtonColor = false
-            aTg.Text = ""
-            aTg.Parent = aBx
-            aCr.CornerRadius = UDim.new(1, 0)
-            aCr.Parent = aTg
-            aKn.Size = UDim2.new(0, 18, 0, 18)
-            aKn.Position = self.cf.autoLoad and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-            aKn.AnchorPoint = Vector2.new(0, 0.5)
-            aKn.BackgroundColor3 = col.text
-            aKn.BorderSizePixel = 0
-            aKn.Parent = aTg
-            knCr.CornerRadius = UDim.new(1, 0)
-            knCr.Parent = aKn
-            btBx.Size = UDim2.new(1, 0, 0, 80)
-            btBx.Position = UDim2.new(0, 0, 0, 120)
+            
+            if hasautoload then
+                aBx = Instance.new("Frame")
+                aLb = Instance.new("TextLabel")
+                aTg = Instance.new("TextButton")
+                aCr = Instance.new("UICorner")
+                aKn = Instance.new("Frame")
+                knCr = Instance.new("UICorner")
+                
+                aBx.Size = UDim2.new(1, 0, 0, 30)
+                aBx.Position = UDim2.new(0, 0, 0, 75)
+                aBx.BackgroundTransparency = 1
+                aBx.Parent = mnAr
+                
+                aLb.Size = UDim2.new(0, 100, 1, 0)
+                aLb.Position = UDim2.new(0, 0, 0, 0)
+                aLb.BackgroundTransparency = 1
+                aLb.Text = "Auto Load"
+                aLb.TextColor3 = col.textSoft
+                aLb.TextSize = 12
+                aLb.Font = curFnt.normal
+                aLb.TextXAlignment = Enum.TextXAlignment.Left
+                aLb.Parent = aBx
+                
+                aTg.Size = UDim2.new(0, 44, 0, 22)
+                aTg.Position = UDim2.new(1, 0, 0.5, 0)
+                aTg.AnchorPoint = Vector2.new(1, 0.5)
+                aTg.BackgroundColor3 = self.cf.autoLoad and col.blue or col.light
+                aTg.BackgroundTransparency = self.cf.autoLoad and 0.2 or 0.6
+                aTg.BorderSizePixel = 0
+                aTg.AutoButtonColor = false
+                aTg.Text = ""
+                aTg.Parent = aBx
+                
+                aCr.CornerRadius = UDim.new(1, 0)
+                aCr.Parent = aTg
+                
+                aKn.Size = UDim2.new(0, 18, 0, 18)
+                aKn.Position = self.cf.autoLoad and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+                aKn.AnchorPoint = Vector2.new(0, 0.5)
+                aKn.BackgroundColor3 = col.text
+                aKn.BorderSizePixel = 0
+                aKn.Parent = aTg
+                
+                knCr.CornerRadius = UDim.new(1, 0)
+                knCr.Parent = aKn
+            end
+            
+            btBx.Size = UDim2.new(1, 0, 0, hasautoload and 80 or 50)
+            btBx.Position = UDim2.new(0, 0, 0, hasautoload and 120 or 85)
             btBx.BackgroundTransparency = 1
             btBx.Parent = mnAr
+            
             lBt.Size = UDim2.new(1, 0, 0, 36)
             lBt.Position = UDim2.new(0, 0, 0, 0)
             lBt.BackgroundColor3 = col.light
@@ -999,6 +1022,7 @@ function R4:Launch(opts)
             lTx.Font = curFnt.bold
             lTx.TextXAlignment = Enum.TextXAlignment.Left
             lTx.Parent = lBt
+            
             vBt.Size = UDim2.new(1, 0, 0, 36)
             vBt.Position = UDim2.new(0, 0, 0, 44)
             vBt.BackgroundColor3 = col.light
@@ -1136,15 +1160,17 @@ function R4:Launch(opts)
                 if p.closeIcon then tween:Create(p.closeIcon, TweenInfo.new(0.2), {ImageColor3 = col.textSoft, Rotation = 0}):Play() end
             end)
             
-            p.autoToggle.MouseButton1Click:Connect(function()
-                self.cf.autoLoad = not self.cf.autoLoad
-                config:save(self.cf)
-                local newPos = self.cf.autoLoad and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-                tween:Create(p.autoKnob, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = newPos}):Play()
-                tween:Create(p.autoToggle, TweenInfo.new(0.3), {BackgroundColor3 = self.cf.autoLoad and col.blue or col.light, BackgroundTransparency = self.cf.autoLoad and 0.2 or 0.6}):Play()
-                if self.cf.autoLoad and self.pop then self.pop:show("Auto load on", "good", 2)
-                elseif not self.cf.autoLoad and self.pop then self.pop:show("Auto load off", "info", 2) end
-            end)
+            if hasautoload and p.autoToggle then
+                p.autoToggle.MouseButton1Click:Connect(function()
+                    self.cf.autoLoad = not self.cf.autoLoad
+                    config:save(self.cf)
+                    local newPos = self.cf.autoLoad and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+                    tween:Create(p.autoKnob, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = newPos}):Play()
+                    tween:Create(p.autoToggle, TweenInfo.new(0.3), {BackgroundColor3 = self.cf.autoLoad and col.blue or col.light, BackgroundTransparency = self.cf.autoLoad and 0.2 or 0.6}):Play()
+                    if self.cf.autoLoad and self.pop then self.pop:show("Auto load on", "good", 2)
+                    elseif not self.cf.autoLoad and self.pop then self.pop:show("Auto load off", "info", 2) end
+                end)
+            end
             
             p.linkButton.MouseEnter:Connect(function()
                 tween:Create(p.linkButton, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {BackgroundTransparency = 0.3, Size = UDim2.new(1, 2, 0, 38), Position = UDim2.new(0, -1, 0, -1)}):Play()
