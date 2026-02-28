@@ -1,3 +1,4 @@
+-- creds to R4, Sx, Ency
 local R4 = {}
 
 R4.Appearance = {
@@ -21,7 +22,7 @@ R4.Features = {
     DiscordButton = true,
     ThemeChanger = true,
     FontChanger = true,
-    AutoLoadToggle = true
+    AutoLoadToggle = true -- bug
 }
 
 R4.DiscordAPI = {
