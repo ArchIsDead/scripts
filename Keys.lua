@@ -26,7 +26,7 @@ R4.Features = {
 
 R4.DiscordAPI = {
     Enabled = true,
-    URL = "https://discord-invites-api.vercel.app/api/v10/invites/"
+    URL = "https://discord.com/api/v9/invites/"
 }
 
 R4.Themes = {
@@ -354,25 +354,14 @@ function R4:Launch(opts)
         end
 
         function Main:gtD()
-            if not R4.DiscordAPI.Enabled then
-                self.dc = nil
-                return false
-            end
-            local ok, res = pcall(function() 
-                return http:GetAsync("https://discord.com/api/v9/invites/"..discordServer.."?with_counts=true") 
+            local ok, res = pcall(function()
+                return http:GetAsync("https://discord.com/api/v9/invites/"..discordServer.."?with_counts=true")
             end)
-            if ok then 
-                local data = http:JSONDecode(res)
-                self.dc = {
-                    guild = {name = data.guild.name},
-                    member_count = data.approximate_member_count,
-                    presence_count = data.approximate_presence_count
-                }
-                return true
-            else
-                self.dc = nil
-                return false
+            
+            if ok then
+                self.dc = http:JSONDecode(res)
             end
+            return self.dc ~= nil
         end
 
         function Main:shwS()
@@ -459,7 +448,7 @@ function R4:Launch(opts)
             svNm.Position = UDim2.new(0.5, 0, 0, 80)
             svNm.AnchorPoint = Vector2.new(0.5, 0)
             svNm.BackgroundTransparency = 1
-            svNm.Text = self.dc and self.dc.guild.name or "Join Server"
+            svNm.Text = self.dc and self.dc.guild.name or "&R4 Hideout"
             svNm.TextColor3 = col.text
             svNm.TextSize = 16
             svNm.Font = curFnt.bold
@@ -491,7 +480,7 @@ function R4:Launch(opts)
             mbCt.Size = UDim2.new(0, 60, 0, 16)
             mbCt.Position = UDim2.new(0, 32, 0.25, 0)
             mbCt.BackgroundTransparency = 1
-            mbCt.Text = self.dc and tostring(self.dc.member_count) or "N/A"
+            mbCt.Text = tostring((self.dc and self.dc.approximate_member_count) or "N/A")
             mbCt.TextColor3 = col.text
             mbCt.TextSize = 14
             mbCt.Font = curFnt.bold
@@ -520,7 +509,7 @@ function R4:Launch(opts)
             onCt.Size = UDim2.new(0, 60, 0, 16)
             onCt.Position = UDim2.new(0.5, 30, 0.25, 0)
             onCt.BackgroundTransparency = 1
-            onCt.Text = self.dc and tostring(self.dc.presence_count) or "N/A"
+            onCt.Text = tostring((self.dc and self.dc.approximate_presence_count) or "N/A")
             onCt.TextColor3 = col.text
             onCt.TextSize = 14
             onCt.Font = curFnt.bold
