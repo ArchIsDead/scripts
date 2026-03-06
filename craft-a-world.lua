@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://r4-sec.vercel.app/files/96eca88fa756075f3517c7b80dcc921a"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ArchIsDead/scripts/refs/heads/main/053e87065bd8192b.lua.txt"))()
