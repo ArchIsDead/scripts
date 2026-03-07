@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ArchIsDead/scripts/refs/heads/main/053e87065bd8192b.lua.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ArchIsDead/scripts/refs/heads/main/660cb63fa27f6272.lua.txt"))()
